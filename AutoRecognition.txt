@@ -1,0 +1,27 @@
+int main(int argc, char** argv)
+{
+	/*
+	IplImage* img = cvLoadImage("C:\\opencv\\samples\\c\\lena.jpg");
+	cvNamedWindow("Example1", CV_WINDOW_AUTOSIZE);
+	cvShowImage("Example1", img);
+	cvWaitKey(0);
+	cvReleaseImage(&img);
+	cvDestroyWindow("Example1");
+	*/
+	
+	cvNamedWindow("Example2", CV_WINDOW_AUTOSIZE);
+	CvCapture* capture = cvCreateFileCapture("C:\\opencv\\samples\\c\\tree.avi");
+	IplImage* frame = NULL;
+	while(1){
+	
+		frame = cvQueryFrame(capture);
+		if(!frame) break;
+		cvShowImage("Example2",frame);
+		char c = cvWaitKey(1000);
+		if(c == 27) break;
+	}
+	cvReleaseCapture(&capture);
+	cvDestroyWindow("Example2");
+	
+	return 0;
+}
