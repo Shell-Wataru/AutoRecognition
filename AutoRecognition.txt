@@ -1,6 +1,7 @@
 int main(int argc, char** argv)
 {
-	/*
+	//display picture
+	/* 
 	IplImage* img = cvLoadImage("C:\\opencv\\samples\\c\\lena.jpg");
 	cvNamedWindow("Example1", CV_WINDOW_AUTOSIZE);
 	cvShowImage("Example1", img);
@@ -8,7 +9,8 @@ int main(int argc, char** argv)
 	cvReleaseImage(&img);
 	cvDestroyWindow("Example1");
 	*/
-	
+
+	//display movie
 	cvNamedWindow("Example2", CV_WINDOW_AUTOSIZE);
 	CvCapture* capture = cvCreateFileCapture("C:\\opencv\\samples\\c\\tree.avi");
 	IplImage* frame = NULL;
