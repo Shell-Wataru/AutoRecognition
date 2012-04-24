@@ -67,6 +67,25 @@ void example2_4(IplImage* image){
 	cvDestroyWindow("Example4-out");
 }
 
+//hsv
+void saturate_hsv(IplImage* img){
+
+	for(int y=0;y<img->height;y++){
+		uchar* ptr = (uchar*) (img->imageData + y * img->widthStep);
+		for(int x=0;x<img->width;x++){
+			ptr[3*x]   = 255-ptr[3*x];		//h:色相
+			ptr[3*x+1] = 255-ptr[3*x+1];		//s:彩度
+			ptr[3*x+2] = 255-ptr[3*x+2];		//v:明度
+		}
+	}
+	cvNamedWindow("saturate_pic");
+	cvShowImage("saturate_pic",img);
+	cvReleaseImage(&img);
+	cvWaitKey(0);
+	cvDestroyWindow("saturate_pic");
+}
+
+//half size
 IplImage* doPyrDown(IplImage* in,int filter = IPL_GAUSSIAN_5x5){
 
 	assert(in->width%2 == 0 && in->height%2 == 0);
@@ -75,6 +94,7 @@ IplImage* doPyrDown(IplImage* in,int filter = IPL_GAUSSIAN_5x5){
 	return(out);
 }
 
+//canny
 IplImage* doCanny(IplImage* in,double lowThresh,double highThresh,double aperture){
 
 	if(in->nChannels != 1){ return(0);} 
@@ -91,6 +111,9 @@ int main(int argc, char** argv)
 	char* lena = argc > 1 ? argv[1] : "C:\\opencv\\samples\\c\\lena.jpg";
 	IplImage* img_g = cvLoadImage(lena, CV_LOAD_IMAGE_GRAYSCALE);
 	IplImage* tmp_img = cvCreateImage(cvGetSize(img), IPL_DEPTH_32F, 1);
+	IplImage* face_img = cvLoadImage("C:\\Users\\t2ladmin\\Documents\\Visual Studio 2010\\Projects\\FaceRecognition\\Faces\\image_0074.jpg");
+	IplImage* neta = cvLoadImage("C:\\Users\\t2ladmin\\Downloads\\pic\\president.jpg");
+	IplImage* src = cvLoadImage("C:\\opencv\\samples\\c\\cat.jpg",1);
 	
 	//display picture-----------------------------------------------------------------------------
 	/* 
@@ -161,7 +184,7 @@ int main(int argc, char** argv)
 	IplImage* img_canny = doCanny(img_g,50.0,200.0,3);
 	cvShowImage("Example6", img_canny);
 	cvWaitKey(0);
-    	cvReleaseImage(&img_canny);
+    cvReleaseImage(&img_canny);
 	cvDestroyWindow("Example6");
 	*/
 	//Sobel edge Dct-----------------------------------------------------------------------------
@@ -172,7 +195,7 @@ int main(int argc, char** argv)
 	cvConvertScaleAbs(tmp_img,sobel_img,1,0);
 	cvShowImage("Example7", sobel_img);
 	cvWaitKey(0);
-    	cvReleaseImage(&sobel_img);
+    cvReleaseImage(&sobel_img);
 	cvDestroyWindow("Example7");
 	*/
 	//Laplace edge Dct--------------------------------------------------------------------------
@@ -183,7 +206,7 @@ int main(int argc, char** argv)
 	cvConvertScaleAbs(tmp_img,laplace_img);
 	cvShowImage("Example8", laplace_img);
 	cvWaitKey(0);
-    	cvReleaseImage(&laplace_img);
+    cvReleaseImage(&laplace_img);
 	cvDestroyWindow("Example8");
 	*/
 	//use CV_MAT_ELEM to access Matrix
@@ -191,11 +214,49 @@ int main(int argc, char** argv)
 	CvMat* mat = cvCreateMat(5,5,CV_32FC1);
 	float element_3_2 = CV_MAT_ELEM(*mat,float,3,2);
 	*/
+    
+    //Face Dect----------------------------------------------------------------------------------
+	
+	// 顔検出対象の画像データ用
+	IplImage* tarImg;
+	// 検出対象の画像ファイルパス
+	//char tarFilePath[] = "lena.jpg";
+	// 画像データの読み込み
+	tarImg = neta;
+	//tarImg = img;
+	//tarImg = face_img;
+	// 正面顔検出器の読み込み
+	CvHaarClassifierCascade* cvHCC = (CvHaarClassifierCascade*)cvLoad("C:\\opencv\\data\\haarcascades\\haarcascade_frontalface_default.xml");
+	// 検出に必要なメモリストレージを用意する
+	CvMemStorage* cvMStr = cvCreateMemStorage(0);
+	// 検出情報を受け取るためのシーケンスを用意する
+	CvSeq* face;
+	// 画像中から検出対象の情報を取得する
+	face = cvHaarDetectObjects(tarImg, cvHCC, cvMStr);
+	for (int i = 0; i < face->total; i++) {
+		//検出情報から顔の位置情報を取得
+		CvRect* faceRect = (CvRect*)cvGetSeqElem(face, i);
+		// 取得した顔の位置情報に基づき、矩形描画を行う
+		cvRectangle(tarImg,
+			cvPoint(faceRect->x, faceRect->y),
+			cvPoint(faceRect->x + faceRect->width, faceRect->y + faceRect->height),
+			CV_RGB(0, 255 ,0), 
+			2, CV_AA);
+	}
+	cvNamedWindow("face_detect");
+	cvShowImage("face_detect", tarImg);
+	cvWaitKey(0);
+	//cvSaveImage("lenaDct.jpg",tarImg);
+	cvDestroyWindow("face_detect");
+	cvReleaseMemStorage(&cvMStr);
+	cvReleaseHaarClassifierCascade(&cvHCC);
+	cvReleaseImage(&tarImg);
+	
+	
+	//hsv
+	//saturate_hsv(img);
 
-
-
-
-
+	
 	return 0;
 }
 
