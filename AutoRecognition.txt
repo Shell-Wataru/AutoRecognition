@@ -1,16 +1,110 @@
+// FaceRecognition.cpp : コンソール アプリケーションのエントリ ポイントを定義します。
+//
+
+#include "stdafx.h"
+#include "opencv\cv.h"
+#include "opencv\cvaux.h"
+#include "opencv\cvwimage.h"
+#include "opencv\cxcore.h"
+#include "opencv\cxmisc.h"
+#include "opencv\highgui.h"
+#include "opencv\ml.h"
+
+#ifdef _DEBUG
+    //Debugモードの場合
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_core231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_imgproc231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_highgui231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_objdetect231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_contrib231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_features2d231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_flann231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_gpu231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_haartraining_engined.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_legacy231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_ts231d.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_video231d.lib")
+#else
+    //Releaseモードの場合
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_core231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_imgproc231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_highgui231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_objdetect231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_contrib231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_features2d231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_flann231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_gpu231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_haartraining_engined.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_legacy231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_ts231.lib")
+    #pragma comment(lib,"C:\\opencv\\build\\x86\\vc10\\lib\\opencv_video231.lib")
+#endif
+
+//track bar
+int g_slider_position = 0;
+CvCapture* g_capture = NULL;
+
+void onTrackbarSlide(int pos){
+
+	cvSetCaptureProperty(g_capture, CV_CAP_PROP_POS_FRAMES, pos);  //CV_CAP_PROP_POS_AVI_RATIO
+}
+
+//smoothing picture
+void example2_4(IplImage* image){
+
+	cvNamedWindow("Example4-in");
+	cvNamedWindow("Example4-out");
+	cvShowImage("Example4-in",image);
+	IplImage* out = cvCreateImage(cvGetSize(image),IPL_DEPTH_8U,3);
+	
+	//それぞれのピクセルを中心に3×3の領域をGaussianで平滑化
+	cvSmooth(image,out,CV_GAUSSIAN,3,3);
+	cvShowImage("Example4-out",out);
+	
+	cvReleaseImage(&out);
+	cvWaitKey(0);
+	cvDestroyWindow("Example4-in");
+	cvDestroyWindow("Example4-out");
+}
+
+IplImage* doPyrDown(IplImage* in,int filter = IPL_GAUSSIAN_5x5){
+
+	assert(in->width%2 == 0 && in->height%2 == 0);
+	IplImage* out = cvCreateImage(cvSize(in->width/2,in->height/2),in->depth,in->nChannels);
+	cvPyrDown(in,out);
+	return(out);
+}
+
+IplImage* doCanny(IplImage* in,double lowThresh,double highThresh,double aperture){
+
+	if(in->nChannels != 1){ return(0);} 
+	IplImage* out = cvCreateImage(cvGetSize(in),in->depth,1);
+	cvCanny(in,out,lowThresh,highThresh,aperture);
+	return(out);
+}
+
+
 int main(int argc, char** argv)
 {
-	//display picture
+	IplImage* img = cvLoadImage("C:\\opencv\\samples\\c\\lena.jpg");
+	IplImage* imgc = cvLoadImage("C:\\opencv\\samples\\c\\box_in_scene.png");
+	char* lena = argc > 1 ? argv[1] : "C:\\opencv\\samples\\c\\lena.jpg";
+	IplImage* img_g = cvLoadImage(lena, CV_LOAD_IMAGE_GRAYSCALE);
+	IplImage* tmp_img = cvCreateImage(cvGetSize(img), IPL_DEPTH_32F, 1);
+	
+	//display picture-----------------------------------------------------------------------------
 	/* 
 	IplImage* img = cvLoadImage("C:\\opencv\\samples\\c\\lena.jpg");
-	cvNamedWindow("Example1", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("Example1", CV_WINDOW_AUTOSIZE); //default size of the picture
+	//cvNamedWindow("Example1", 0); //fixed size of the picture
 	cvShowImage("Example1", img);
 	cvWaitKey(0);
 	cvReleaseImage(&img);
 	cvDestroyWindow("Example1");
 	*/
 
-	//display movie
+	//display movie-------------------------------------------------------------------------------
+	/*
 	cvNamedWindow("Example2", CV_WINDOW_AUTOSIZE);
 	CvCapture* capture = cvCreateFileCapture("C:\\opencv\\samples\\c\\tree.avi");
 	IplImage* frame = NULL;
@@ -19,11 +113,89 @@ int main(int argc, char** argv)
 		frame = cvQueryFrame(capture);
 		if(!frame) break;
 		cvShowImage("Example2",frame);
-		char c = cvWaitKey(1000);
-		if(c == 27) break;
+		char c = cvWaitKey(100);
+		if(c == 27) break; //break with Esc
 	}
 	cvReleaseCapture(&capture);
 	cvDestroyWindow("Example2");
+	*/
+	/*
+	cvNamedWindow("Example3", CV_WINDOW_AUTOSIZE);
+	g_capture = cvCreateFileCapture("C:\\opencv\\samples\\c\\tree.avi");
+	int frames = (int) cvGetCaptureProperty(g_capture, CV_CAP_PROP_FRAME_COUNT);
+	if(frames != 0){
 	
+		cvCreateTrackbar("Position","Example3",&g_slider_position,frames,onTrackbarSlide);
+	}
+	IplImage* frame;
+	while(1){
+	
+		frame = cvQueryFrame(g_capture);
+		if(!frame) break;
+		cvShowImage("Example3",frame);
+		char c = cvWaitKey(1000);
+		if(c == 27) break; //break with Esc
+	}
+	cvReleaseCapture(&g_capture);
+	cvDestroyWindow("Example3");
+	*/
+
+	//smoothing picture---------------------------------------------------------------------------
+	
+	//example2_4(img);
+
+	//display half size picture-------------------------------------------------------------------
+	/*
+	cvNamedWindow("Example5", CV_WINDOW_AUTOSIZE); //default size of the picture
+	//cvNamedWindow("Example1", 0); //fixed size of the picture
+	IplImage* img_half = doPyrDown(img,IPL_GAUSSIAN_5x5);
+	cvShowImage("Example5", img_half);
+	cvWaitKey(0);
+	cvReleaseImage(&img_half);
+	cvDestroyWindow("Example5");
+	*/
+
+	//Canny edge Dct------------------------------------------------------------------------------
+	/*
+	cvNamedWindow("Example6", CV_WINDOW_AUTOSIZE); //default size of the picture
+	IplImage* img_canny = doCanny(img_g,50.0,200.0,3);
+	cvShowImage("Example6", img_canny);
+	cvWaitKey(0);
+    	cvReleaseImage(&img_canny);
+	cvDestroyWindow("Example6");
+	*/
+	//Sobel edge Dct-----------------------------------------------------------------------------
+	/*
+	IplImage* sobel_img = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+	cvNamedWindow("Example7", CV_WINDOW_AUTOSIZE); //default size of the picture
+	cvSobel(img_g,tmp_img,1,0,3);
+	cvConvertScaleAbs(tmp_img,sobel_img,1,0);
+	cvShowImage("Example7", sobel_img);
+	cvWaitKey(0);
+    	cvReleaseImage(&sobel_img);
+	cvDestroyWindow("Example7");
+	*/
+	//Laplace edge Dct--------------------------------------------------------------------------
+	/*
+	IplImage* laplace_img = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+	cvNamedWindow("Example8", CV_WINDOW_AUTOSIZE); //default size of the picture
+	cvLaplace(img_g,tmp_img);
+	cvConvertScaleAbs(tmp_img,laplace_img);
+	cvShowImage("Example8", laplace_img);
+	cvWaitKey(0);
+    	cvReleaseImage(&laplace_img);
+	cvDestroyWindow("Example8");
+	*/
+	//use CV_MAT_ELEM to access Matrix
+	/*
+	CvMat* mat = cvCreateMat(5,5,CV_32FC1);
+	float element_3_2 = CV_MAT_ELEM(*mat,float,3,2);
+	*/
+
+
+
+
+
 	return 0;
 }
+
