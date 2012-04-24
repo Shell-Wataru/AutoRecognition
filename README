@@ -1,1 +1,8 @@
-AutoRecognition aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+AutoRecognition 
+
+4/24 AutoRecognition.txt
+・画像の平滑化
+・画像の縮小(半分)
+・エッジ検出(canny,sobel,laplace)
+・顔検出
+の動作を確認しました
