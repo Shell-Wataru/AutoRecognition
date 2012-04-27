@@ -1,40 +1,86 @@
-/*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
- 
-  This example code is in the public domain.
- */
+void motorStop_r();
+void motorStop_l();
 
 void setup() {                
-  // initialize the digital pin as an output.
-  // Pin 13 has an LED connected on most Arduino boards:
+
   pinMode(1, OUTPUT);
   pinMode(2, OUTPUT); 
- 
+  pinMode(7,OUTPUT);
+  pinMode(8,OUTPUT);
+  analogWrite(3,0); 
+  analogWrite(9,0);
+  motorStop_l();
+  motorStop_r();
+
 }
 
-void motorGo(){
+void motorGo_r(){
+  digitalWrite(7,HIGH);
+  digitalWrite(8,LOW);
+}
+
+void motorStop_r(){
+  digitalWrite(7,LOW);
+  digitalWrite(8,LOW);
+}
+
+void motorBack_r(){
+  digitalWrite(7,LOW);
+  digitalWrite(8,HIGH);
+}
+
+void motorGo_l(){
   digitalWrite(1,HIGH);
   digitalWrite(2,LOW);
 }
 
-void motorStop(){
+void motorStop_l(){
   digitalWrite(1,LOW);
   digitalWrite(2,LOW);
 }
 
-void motorBack(){
+void motorBack_l(){
   digitalWrite(1,LOW);
   digitalWrite(2,HIGH);
 }
 
+void motor_Go(){
+    motorGo_r();
+    motorGo_l();
+}
+
+void motor_Back(){
+    motorBack_r();
+    motorBack_l();
+}
+void motor_Stop(){
+    motorStop_r();
+    motorStop_l();
+}
+void motor_Left(){
+  motorGo_r();
+  motorStop_l();
+}
+void motor_Right(){
+  motorStop_r();
+  motorGo_l();
+}
+
+
 void loop() {
   // wait for a second
-  analogWrite(3,255); 
+  delay(3000);
+  analogWrite(3,200); 
+  analogWrite(9,200);
   motorGo();
-  delay(1000);
-  motorStop();
-  delay(1000);
+  delay(3000);
   motorBack();
-  delay(1000);
+  delay(3000);
+  motorLeft();
+  delay(3000);
+  motorRight();
+  delay(3000);
+  
+  motorStop();
+  delay(3000);
 }
