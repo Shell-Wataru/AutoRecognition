@@ -76,4 +76,11 @@ void loop() {
   delay(3000);
   motorBack();
   delay(3000);
+  motorLeft();
+  delay(3000);
+  motorRight();
+  delay(3000);
+  
+  motorStop();
+  delay(3000);
 }
