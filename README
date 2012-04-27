@@ -6,3 +6,8 @@ AutoRecognition
 ・エッジ検出(canny,sobel,laplace)
 ・顔検出
 の動作を確認しました
+
+4/27 AutoRecognition.txt
+・カメラからのキャプチャ
+・カメラからの顔認識
+の動作を確認しました
