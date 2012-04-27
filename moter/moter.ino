@@ -1,17 +1,18 @@
-void motorStop_r();
-void motorStop_l();
+//arduino motor control program
+
+void motorStop();
 
 void setup() {                
 
-  pinMode(1, OUTPUT);
-  pinMode(2, OUTPUT); 
+  pinMode(4, OUTPUT);
+  pinMode(3, OUTPUT); 
   pinMode(7,OUTPUT);
   pinMode(8,OUTPUT);
-  analogWrite(3,0); 
-  analogWrite(9,0);
-  motorStop_l();
-  motorStop_r();
-
+  analogWrite(5,100); 
+  analogWrite(9,100);
+  motorStop();
+  Serial.begin(9600);
+  Serial.println("start!");
 }
 
 void motorGo_r(){
@@ -30,57 +31,60 @@ void motorBack_r(){
 }
 
 void motorGo_l(){
-  digitalWrite(1,HIGH);
-  digitalWrite(2,LOW);
+  digitalWrite(3,HIGH);
+  digitalWrite(4,LOW);
 }
 
 void motorStop_l(){
-  digitalWrite(1,LOW);
-  digitalWrite(2,LOW);
+  digitalWrite(3,LOW);
+  digitalWrite(4,LOW);
 }
 
 void motorBack_l(){
-  digitalWrite(1,LOW);
-  digitalWrite(2,HIGH);
+  digitalWrite(3,LOW);
+  digitalWrite(4,HIGH);
 }
 
-void motor_Go(){
+void motorGo(){
     motorGo_r();
     motorGo_l();
 }
 
-void motor_Back(){
+void motorBack(){
     motorBack_r();
     motorBack_l();
 }
-void motor_Stop(){
+void motorStop(){
     motorStop_r();
     motorStop_l();
 }
-void motor_Left(){
+void motorLeft(){
   motorGo_r();
-  motorStop_l();
+  motorBack_l();
 }
-void motor_Right(){
-  motorStop_r();
+void motorRight(){
+  motorBack_r();
   motorGo_l();
 }
 
 
+
 void loop() {
   // wait for a second
-  delay(3000);
-  analogWrite(3,200); 
-  analogWrite(9,200);
-  motorGo();
-  delay(3000);
-  motorBack();
-  delay(3000);
-  motorLeft();
-  delay(3000);
-  motorRight();
-  delay(3000);
-  
-  motorStop();
-  delay(3000);
+  int c;
+  c=Serial.read();
+  if(c>='a' && c<='z'){
+    Serial.println(c);
+  }
+  if(c=='g'){
+    motorGo();
+  }else if(c=='b'){
+    motorBack();
+  }else if(c=='s'){
+    motorStop();
+  }else if(c=='l'){
+    motorLeft();
+  }else if(c=='r'){
+    motorRight();
+  }
 }
