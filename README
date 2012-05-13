@@ -11,3 +11,10 @@ AutoRecognition
 ・カメラからのキャプチャ
 ・カメラからの顔認識
 の動作を確認しました
+
+5/11
+・FaceRecognition2.cpp
+ - 顔領域抽出と画像保存
+・FaceRecognition3.cpp
+ - 固有顔の計算と学習データの作成(未完)
+を追加しました
