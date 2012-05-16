@@ -8,8 +8,8 @@ void setup() {
   pinMode(3, OUTPUT); 
   pinMode(7,OUTPUT);
   pinMode(8,OUTPUT);
-  analogWrite(5,100); 
-  analogWrite(9,100);
+  analogWrite(5,250); 
+  analogWrite(9,200);
   motorStop();
   Serial.begin(9600);
   Serial.println("start!");
