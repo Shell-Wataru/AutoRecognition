@@ -16,5 +16,5 @@ AutoRecognition
 ・FaceRecognition2.cpp
  - 顔領域抽出と画像保存
 ・FaceRecognition3.cpp
- - 固有顔の計算と学習データの作成(未完)
+ - 取得画像のピクセル値の書き出し
 を追加しました
