@@ -1,15 +1,24 @@
 //arduino motor control program
 
 void motorStop();
+int turn_powerL=50;
+int turn_powerR=62;
+int powerL=50;
+int powerR=50;
 
+void changePower(int l,int r){
+  analogWrite(5,l); 
+  analogWrite(9,r);
+}
 void setup() {                
 
   pinMode(4, OUTPUT);
   pinMode(3, OUTPUT); 
   pinMode(7,OUTPUT);
   pinMode(8,OUTPUT);
-  analogWrite(5,250); 
-  analogWrite(9,200);
+
+  
+  changePower(powerL,powerR);
   motorStop();
   Serial.begin(9600);
   Serial.println("start!");
@@ -46,11 +55,13 @@ void motorBack_l(){
 }
 
 void motorGo(){
+  changePower(powerL,powerR);
     motorGo_r();
     motorGo_l();
 }
 
 void motorBack(){
+  changePower(powerL,powerR);
     motorBack_r();
     motorBack_l();
 }
@@ -58,11 +69,16 @@ void motorStop(){
     motorStop_r();
     motorStop_l();
 }
+
+
+
 void motorLeft(){
+  changePower(turn_powerL,turn_powerR);
   motorGo_r();
   motorBack_l();
 }
 void motorRight(){
+  changePower(turn_powerL,turn_powerR);
   motorBack_r();
   motorGo_l();
 }
