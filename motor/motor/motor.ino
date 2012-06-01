@@ -83,7 +83,23 @@ void motorRight(){
   motorGo_l();
 }
 
-
+//4桁の数字を読み込む
+int readInt(){
+  int ans=0;
+  int i=0,inp=-1;
+  for(i=0;i<4;i++){
+    inp=Serial.read();
+    if(inp>='0' && inp<='9'){
+      ans=ans*10+inp-'0';
+    }else{
+      break;
+    }
+  }
+  if(i==0 && inp==-1){
+    return -1;
+  }
+  return ans;
+}
 
 void loop() {
   // wait for a second
