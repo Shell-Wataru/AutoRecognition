@@ -64,7 +64,7 @@
 
 #define FACE_SIZE				 32		
 #define SAMPLE				     51		//サンプル数
-#define DATA_DIR        "C:\\Users\\t2ladmin\\Documents\\Visual Studio 2010\\Projects\\FaceRecognition3\\FaceRecognition3\\faces\\ushi50\\ushi"
+#define DATA_DIR        "C:\\Users\\t2ladmin\\Documents\\Visual Studio 2010\\Projects\\FaceRecognition3\\FaceRecognition3\\faces\\liang50\\liang"
 #define OUTPUT_FILE		"analysis.txt"
 #define MARGIN_X                 1/10	//サンプル画像から取り除く横幅
 #define MARGIN_Y                 1/10	//サンプル画像から取り除く縦幅
@@ -141,9 +141,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	CvPoint nose_rightdown[SAMPLE];	//鼻右下の座標
 	CvPoint mouth_leftup[SAMPLE];		//口左上の座標
 	CvPoint mouth_rightdown[SAMPLE];	//口右下の座標
-	//CvPoint reye_center[SAMPLE];		//右目の中心座標	
-	//CvPoint leye_center[SAMPLE];		//左目の中心座標
-	CvPoint eye_center[SAMPLE];
+	CvPoint reye_center[SAMPLE];		//右目の中心座標	
+	CvPoint leye_center[SAMPLE];		//左目の中心座標
+	//CvPoint eye_center[SAMPLE];
 	CvPoint nose_center[SAMPLE];		//鼻の中心座標
 	CvPoint mouth_center[SAMPLE];		//口の中心座標
 	int dist_LE_to_RE[SAMPLE];			//左目と右目の距離
@@ -211,7 +211,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			
 			//////////////////////////////////////////////////////////////
 			//検出した目の座標をreye_leftupなどに入れる
-			//SCALEで割ることを忘れずに
+			//SCALEで割ることを忘れずに(←割らなくてもいいような気がしてきた)
 			
 			int center_cx;
 			int center_cy;
@@ -221,21 +221,26 @@ int _tmain(int argc, _TCHAR* argv[])
 			eye_rightdown[j].y = eyeRect->y + eyeRect->height;
 			center_cx = (int)(eye_leftup[j].x + eye_rightdown[j].x)/2;
 			center_cy = (int)(eye_leftup[j].y + eye_rightdown[j].y)/2;
-			if(((int)(FACE_SIZE*SCALE*0/4) < center_cx)&(center_cx < (int)(FACE_SIZE*SCALE*3/4))
-				&((int)(FACE_SIZE*SCALE*0/5) < center_cy)&(center_cy < (int)(FACE_SIZE*SCALE*2/5))
+			if(((int)(FACE_SIZE*SCALE*0/4) < center_cx)&(center_cx < (int)(FACE_SIZE*SCALE*1.7/4))
+				&((int)(FACE_SIZE*SCALE*0.6/5) < center_cy)&(center_cy < (int)(FACE_SIZE*SCALE*2/5))
 				){
-				eye_center[j].x = center_cx;
-				eye_center[j].y = center_cy;
+				reye_center[j].x = center_cx;
+				reye_center[j].y = center_cy;
+			}
+			if(((int)(FACE_SIZE*SCALE*2.3/4) < center_cx)&(center_cx < (int)(FACE_SIZE*SCALE*4/4))
+				&((int)(FACE_SIZE*SCALE*0.6/5) < center_cy)&(center_cy < (int)(FACE_SIZE*SCALE*2/5))
+				){
+				leye_center[j].x = center_cx;
+				leye_center[j].y = center_cy;
 			}
 			//////////////////////////////////////////////////////////////
-			//printf("mouth_candidate[%d][%d] = ( %d , %d )\n",j,i,mouth_center[j].x,mouth_center[j].y);
 			cvLine((IplImage*)imgs[j],
-				cvPoint(eye_center[j].x-2,eye_center[j].y-2),
-				cvPoint(eye_center[j].x+2,eye_center[j].y+2),
+				cvPoint(reye_center[j].x-2,reye_center[j].y-2),
+				cvPoint(reye_center[j].x+2,reye_center[j].y+2),
 				CV_RGB( 0 , 255 , 0));
 			cvLine((IplImage*)imgs[j],
-				cvPoint(eye_center[j].x-2,eye_center[j].y+2),
-				cvPoint(eye_center[j].x+2,eye_center[j].y-2),
+				cvPoint(leye_center[j].x-2,leye_center[j].y+2),
+				cvPoint(leye_center[j].x+2,leye_center[j].y-2),
 				CV_RGB( 0 , 255 , 0));
 
 			//////////////////////////////////////////////////////////////
@@ -258,14 +263,16 @@ int _tmain(int argc, _TCHAR* argv[])
 			//////////////////////////////////////////////////////////////
 			int center_cx;
 			int center_cy;
+			int eye_cx = (int)(reye_center[j].x + leye_center[j].x)/2;
 			nose_leftup[j].x = noseRect->x;
 			nose_leftup[j].y = noseRect->y;
 			nose_rightdown[j].x = noseRect->x + noseRect->width;
 			nose_rightdown[j].y = noseRect->y + noseRect->height;
 			center_cx = (int)(nose_leftup[j].x + nose_rightdown[j].x)/2;
 			center_cy = (int)(nose_leftup[j].y + nose_rightdown[j].y)/2;
-			if(((int)FACE_SIZE*SCALE*(1.7)/5 < center_cx)&(center_cx <  (int)FACE_SIZE*SCALE*(3.3)/5)
-				&((int)FACE_SIZE*SCALE*(1.7)/5 < center_cy)&(center_cy < (int)FACE_SIZE*SCALE*(3.3)/5)){
+			if(((int)eye_cx - FACE_SIZE*SCALE*(0.3)/5 < center_cx)&(center_cx <  (int)eye_cx + FACE_SIZE*SCALE*(0.3)/5)
+				//((int)FACE_SIZE*SCALE*(2.1)/5 < center_cx)&(center_cx <  (int)FACE_SIZE*SCALE*(2.9)/5)
+				&((int)FACE_SIZE*SCALE*(1.7)/5 < center_cy)&(center_cy < (int)FACE_SIZE*SCALE*(3.5)/5)){
 				nose_center[j].x = center_cx;
 				nose_center[j].y = center_cy;
 			}
@@ -303,6 +310,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			center_cy = (int)(mouth_leftup[j].y + mouth_rightdown[j].y)/2;
 			if(((int)(nose_center[j].x-FACE_SIZE/4) < center_cx)&(center_cx < (int)(nose_center[j].x+FACE_SIZE/4))
 				&((int)(FACE_SIZE*SCALE*3/5) < center_cy)&(center_cy < (int)(FACE_SIZE*SCALE*5/5))
+				&((int)(FACE_SIZE*SCALE*0.8/5) < (center_cy - nose_center[j].y))
 				){
 				mouth_center[j].x = center_cx;
 				mouth_center[j].y = center_cy;
@@ -318,17 +326,17 @@ int _tmain(int argc, _TCHAR* argv[])
 				cvPoint(mouth_center[j].x+2,mouth_center[j].y-2),
 				CV_RGB( 0 , 0 ,255));
 		}
-		//printf("leye_center[%d] = ( %d , %d )\n",j,leye_center[j].x,leye_center[j].y);
-		//printf("reye_center[%d] = ( %d , %d )\n",j,reye_center[j].x,reye_center[j].y);
+		printf("leye_center[%d] = ( %d , %d )\n",j,leye_center[j].x,leye_center[j].y);
+		printf("reye_center[%d] = ( %d , %d )\n",j,reye_center[j].x,reye_center[j].y);
 		printf("nose_center[%d] = ( %d , %d )\n",j,nose_center[j].x,nose_center[j].y);
 		printf("mouth_center[%d] = ( %d , %d )\n",j,mouth_center[j].x,mouth_center[j].y);
 		//getDist(CvPoint a, CvPoint b)
-		//dist_LE_to_RE[j] = getDist(leye_center[j],reye_center[j]);
-		//dist_LE_to_NO[j] = getDist(leye_center[j],nose_center[j]);
-		//dist_RE_to_NO[j] = getDist(reye_center[j],nose_center[j]);
-		//dist_RE_to_MO[j] = getDist(reye_center[j],mouth_center[j]);
-		//dist_LE_to_MO[j] = getDist(leye_center[j],mouth_center[j]);
-		//dist_NO_to_MO[j] = getDist(nose_center[j],mouth_center[j]);
+		dist_LE_to_RE[j] = getDist(leye_center[j],reye_center[j]);
+		dist_LE_to_NO[j] = getDist(leye_center[j],nose_center[j]);
+		dist_RE_to_NO[j] = getDist(reye_center[j],nose_center[j]);
+		dist_RE_to_MO[j] = getDist(reye_center[j],mouth_center[j]);
+		dist_LE_to_MO[j] = getDist(leye_center[j],mouth_center[j]);
+		dist_NO_to_MO[j] = getDist(nose_center[j],mouth_center[j]);
 
 		char window[] = "detect";
 		char name[256];
