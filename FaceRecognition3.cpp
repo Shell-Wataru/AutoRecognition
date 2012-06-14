@@ -64,8 +64,8 @@
 
 #define FACE_SIZE				 32		
 #define SAMPLE				     51		//サンプル数
-#define DATA_DIR        "C:\\Users\\t2ladmin\\Documents\\Visual Studio 2010\\Projects\\FaceRecognition3\\FaceRecognition3\\faces\\liang50\\liang"
-#define OUTPUT_FILE		"analysis.txt"
+#define DATA_DIR        "C:\\Users\\t2ladmin\\Documents\\Visual Studio 2010\\Projects\\FaceRecognition3\\FaceRecognition3\\faces\\aoi2-50\\aoi2"
+#define OUTPUT_FILE		"aoi4.txt"
 #define MARGIN_X                 1/10	//サンプル画像から取り除く横幅
 #define MARGIN_Y                 1/10	//サンプル画像から取り除く縦幅
 #define SCALE                     5     //器官検出のためのサンプル画像拡大倍率
@@ -90,6 +90,19 @@ IplImage* resize(IplImage* img,int height,int width){
 	cvResize(img,resized_img,CV_INTER_NN);
 	return resized_img;
 }
+
+//IplImage* resize2(IplImage* img,CvPoint p1,CvPoint p2,int height,int width);
+
+//face 領域を切り出してきた画像を32×32にリサイズします
+IplImage* resize2(IplImage* img,CvPoint p1,CvPoint p2,int height,int width){
+	img = resize(img,FACE_SIZE*SCALE,FACE_SIZE*SCALE);
+	CvRect rect = cvRect(p1.x,p1.y,abs(p2.x-p1.x),abs(p2.y-p1.y));
+	cvSetImageROI(img,rect);
+	IplImage* resized_img = cvCreateImage (cvSize(height,width),img->depth,img->nChannels);
+	cvResize(img,resized_img,CV_INTER_NN);
+	return resized_img;
+}
+
 
 //グレースケールの画像から値を取り出すメソッド
 void getData(IplImage* img,uchar data[FACE_SIZE][FACE_SIZE]){
@@ -141,6 +154,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	CvPoint nose_rightdown[SAMPLE];	//鼻右下の座標
 	CvPoint mouth_leftup[SAMPLE];		//口左上の座標
 	CvPoint mouth_rightdown[SAMPLE];	//口右下の座標
+	CvPoint face_leftup[SAMPLE];
+	CvPoint face_rightdown[SAMPLE];
 	CvPoint reye_center[SAMPLE];		//右目の中心座標	
 	CvPoint leye_center[SAMPLE];		//左目の中心座標
 	//CvPoint eye_center[SAMPLE];
@@ -169,7 +184,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		imgs[i] = cvLoadImage(file_dir,CV_LOAD_IMAGE_COLOR);
 		imgs2[i] = cvLoadImage(file_dir,CV_LOAD_IMAGE_GRAYSCALE);
 		imgs[i] = resize((IplImage*) imgs[i],FACE_SIZE*SCALE,FACE_SIZE*SCALE);
-		imgs2[i] = resize((IplImage*) imgs2[i],FACE_SIZE,FACE_SIZE);
+		//imgs2[i] = resize((IplImage*) imgs2[i],FACE_SIZE*SCALE,FACE_SIZE*SCALE);
+		//imgs2[i] = resize2((IplImage*) imgs2[i],face_leftup[i],face_rightdown[i],FACE_SIZE,FACE_SIZE);
 		file_num++;
 	}
 	// 検出器の読み込み
@@ -187,13 +203,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	CvSeq* nose;
 	CvSeq* mouth;
 
-	for (int j = 0; j < 8 ; j++){
+	for (int j = 0; j < SAMPLE ; j++){
 		// 画像中から検出対象の情報を取得する
 		eye = cvHaarDetectObjects((IplImage*)imgs[j], cvHCC_EYE, cvMStr_EYE);
 		nose = cvHaarDetectObjects((IplImage*)imgs[j], cvHCC_NOSE, cvMStr_NOSE);
 		mouth = cvHaarDetectObjects((IplImage*)imgs[j], cvHCC_MOUTH, cvMStr_MOUTH);
-
-
 
 		for (int i = 0; i < eye->total; i++) {
 		//for (int i = 0; i < 2; i++) {
@@ -286,8 +300,29 @@ int _tmain(int argc, _TCHAR* argv[])
 				cvPoint(nose_center[j].x-2,nose_center[j].y+2),
 				cvPoint(nose_center[j].x+2,nose_center[j].y-2),
 				CV_RGB(255, 0 ,0));
-			
 		}
+
+		//face　の領域の描画
+		if (0 < nose_center[j].x && nose_center[j].x < FACE_SIZE*SCALE 
+			&& 0 < nose_center[j].y && nose_center[j].y < FACE_SIZE*SCALE){
+			face_leftup[j].x = nose_center[j].x-1.05*(nose_rightdown[j].x-nose_leftup[j].x);
+			face_leftup[j].y = nose_center[j].y-1.4*(nose_rightdown[j].y-nose_leftup[j].y);
+			if(face_leftup[j].x < 0) face_leftup[j].x = 1;
+			if(face_leftup[j].y < 0) face_leftup[j].y = 1;
+			face_rightdown[j].x = nose_center[j].x+1.05*(nose_rightdown[j].x-nose_leftup[j].x);
+			face_rightdown[j].y = nose_center[j].y+1.1*(nose_rightdown[j].y-nose_leftup[j].y);
+			if(FACE_SIZE*SCALE < face_leftup[j].x) face_leftup[j].x = FACE_SIZE*SCALE-1;
+			if(FACE_SIZE*SCALE < face_leftup[j].y) face_leftup[j].y = FACE_SIZE*SCALE-1;
+		}
+		else{
+		face_leftup[j] = face_leftup[j-1];
+		face_rightdown[j] = face_rightdown[j-1];
+		}
+
+		cvRectangle((IplImage*)imgs[j],
+				face_leftup[j],face_rightdown[j],
+				CV_RGB(255, 0 ,255), 1, CV_AA);
+
 
 		for (int i = 0; i < mouth->total; i++) {
 			CvRect* mouthRect = (CvRect*)cvGetSeqElem(mouth, i);
@@ -346,13 +381,25 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("=============================================\n");
 		cvNamedWindow(name);
 		cvShowImage(name, (IplImage*)imgs[j]);
-		
+
+		printf("face_leftup[%d] = ( %d , %d )\n",j,face_leftup[j].x,face_leftup[j].y);
+		printf("face_rightdown[%d] = ( %d , %d )\n",j,face_rightdown[j].x,face_rightdown[j].y);
 	}
 	cvWaitKey(0);
 
-	
 
 
+	for (int i = 0 ; i < SAMPLE ; i++){
+		imgs2[i] = resize2((IplImage*) imgs2[i],face_leftup[i],face_rightdown[i],FACE_SIZE,FACE_SIZE);
+	}
+
+	//cvNamedWindow("a0");
+	//cvShowImage("a0",(IplImage*) imgs2[0]);
+	//cvNamedWindow("a1");
+	//cvShowImage("a1",(IplImage*) imgs2[1]);
+	//cvNamedWindow("a2");
+	//cvShowImage("a2",(IplImage*) imgs2[2]);
+	//cvWaitKey(0);
 	
 	/*
 	cvNamedWindow("gray", CV_WINDOW_AUTOSIZE);
@@ -422,4 +469,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	return 0;
 }
-
+/*
+//face 領域を切り出してきた画像を32×32にリサイズします
+IplImage* resize2(IplImage* img,CvPoint p1,CvPoint p2,int height,int width){
+	img = resize(img,FACE_SIZE*SCALE,FACE_SIZE*SCALE);
+	CvRect rect = cvRect(p1.x,p1.y,p2.x-p1.x,p2.y-p1.y);
+	cvSetImageROI(img,rect);
+	//IplImage* small_img = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+	//cvCopy(img,small_img);
+	IplImage* resized_img = cvCreateImage (cvSize(height,width),img->depth,img->nChannels);
+	cvResize(img,resized_img,CV_INTER_NN);
+	return resized_img;
+}
+*/
