@@ -44,6 +44,7 @@ tinyxml2::XMLDocument JuliusResult::doc;
 JuliusResult JuliusResult::getResult(const char* buffer){
 	using namespace tinyxml2;
 	doc.Parse(buffer);
+	doc.Print();
 	XMLElement* recogout=doc.FirstChildElement("RECOGOUT");
 	if(recogout==0){
 		return JuliusResult();
@@ -53,11 +54,13 @@ JuliusResult JuliusResult::getResult(const char* buffer){
 		return JuliusResult();
 	}
 	double score=shypo->DoubleAttribute("SCORE");
+	double cm=0;
 	XMLElement* whypo=shypo->FirstChildElement("WHYPO");
 	Direction dire=Direction::KEEP;
 	while(whypo!=0){
 		const char* word=whypo->Attribute("WORD");
-		whypo=whypo->NextSiblingElement();
+		cm=whypo->DoubleAttribute("CM");
+		
 		if(strcmp(word,"‘O")==0){
 			dire=Direction::FRONT;
 			break;
@@ -70,7 +73,11 @@ JuliusResult JuliusResult::getResult(const char* buffer){
 		}else if(strcmp(word,"Œã")==0){
 			dire=Direction::BACK;
 			break;
+		}else if(strcmp(word,"Ž~‚Ü‚ê")==0){
+			dire=Direction::STOP;
+			break;
 		}
+		whypo=whypo->NextSiblingElement();
 	}
-	return JuliusResult(dire,score);
+	return JuliusResult(dire,score,cm);
 }

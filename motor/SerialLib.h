@@ -2,7 +2,7 @@
 #include <string>
 #include<windows.h>
 #include<memory>
-
+#include "general.h"
 class SerialLib
 {
 public:
@@ -13,8 +13,26 @@ public:
 	void left();
 	void right();
 	void stop();
+	void move(Direction d){
+		if(d==Direction::STOP){
+			stop();
+		}
+		else if(d==Direction::FRONT){
+			go();
+		}
+		else if(d==Direction::LEFT){
+			left();
+		}else if(d==Direction::RIGHT){
+			right();
+		}else if(d==Direction::BACK){
+			back();
+		}
+	}
 	void writeByte(char b);
 	std::string read();
+	bool isFailed(){
+		return hCom == INVALID_HANDLE_VALUE;
+	}
 	typedef std::auto_ptr<SerialLib> APSerial;
 	static APSerial create(){
 		return APSerial(new SerialLib());

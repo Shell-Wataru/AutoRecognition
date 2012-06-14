@@ -2,6 +2,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include "tinyxml2.h"
+#include "general.h"
 
 class ConnextSelf
 {
@@ -21,20 +22,14 @@ public:
 
 class JuliusResult{
 public:
-	enum Direction{
-	STOP,
-	FRONT,
-	RIGHT,
-	LEFT,
-	BACK,
-	KEEP
-	};
+
 	static char* sDirection[];
 public:
-	double score;
+	double score,cm;
 	Direction dire;
-	JuliusResult(Direction d=Direction::KEEP,double s=0):
-	score(s),dire(d){
+
+	JuliusResult(Direction d=Direction::KEEP,double s=0,double c=1.0):
+	score(s),dire(d),cm(c){
 	}
 	static tinyxml2::XMLDocument doc;
 	static JuliusResult getResult(const char* buffer);

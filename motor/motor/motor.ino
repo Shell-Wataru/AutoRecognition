@@ -3,8 +3,8 @@
 void motorStop();
 int turn_powerL=100;
 int turn_powerR=100;
-int powerL=50;
-int powerR=50;
+int powerL=100;
+int powerR=100;
 
 void changePower(int l,int r){
   analogWrite(5,l); 
