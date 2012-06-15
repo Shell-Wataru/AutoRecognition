@@ -3,25 +3,49 @@
 void motorStop();
 int turn_powerL=100;
 int turn_powerR=100;
-int powerL=100;
-int powerR=100;
+int powerL=200;
+int powerR=200;
+
+int headPower=100;
 
 void changePower(int l,int r){
   analogWrite(5,l); 
   analogWrite(9,r);
 }
+
+void changeHeadPower(int p){
+  analogWrite(11,p);
+}
+
 void setup() {                
 
   pinMode(4, OUTPUT);
   pinMode(3, OUTPUT); 
   pinMode(7,OUTPUT);
   pinMode(8,OUTPUT);
-
+  
+  pinMode(13,OUTPUT);
+  pinMode(12,OUTPUT);
   
   changePower(powerL,powerR);
   motorStop();
   Serial.begin(9600);
   Serial.println("start!");
+}
+
+void motorGo_h(){
+  digitalWrite(12,HIGH);
+  digitalWrite(13,LOW);
+}
+
+void motorStop_h(){
+  digitalWrite(12,LOW);
+  digitalWrite(13,LOW);
+}
+
+void motorBack_h(){
+  digitalWrite(12,LOW);
+  digitalWrite(13,HIGH);
 }
 
 void motorGo_r(){
@@ -75,11 +99,13 @@ void motorStop(){
 void motorLeft(){
   changePower(turn_powerL,turn_powerR);
   motorGo_r();
-  motorBack_l();
+  motorStop_l();
+  //motorBack_l();
 }
 void motorRight(){
   changePower(turn_powerL,turn_powerR);
-  motorBack_r();
+  motorStop_r();
+  //motorBack_r();
   motorGo_l();
 }
 
@@ -118,5 +144,11 @@ void loop() {
     motorLeft();
   }else if(c=='r'){
     motorRight();
+  }else if(c=='u'){
+    motorGo_h();
+  }else if(c=='d'){
+    motorBack_h();
+  }else if(c=='k'){
+    motorStop_h();
   }
 }
