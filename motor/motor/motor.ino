@@ -28,6 +28,7 @@ void setup() {
   pinMode(12,OUTPUT);
   
   changePower(powerL,powerR);
+  changeHeadPower(headPower);
   motorStop();
   Serial.begin(9600);
   Serial.println("start!");
