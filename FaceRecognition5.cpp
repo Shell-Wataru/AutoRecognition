@@ -71,6 +71,8 @@
 #define NOSE            "C:\\opencv\\data\\haarcascades\\haarcascade_mcs_nose.xml"
 #define MOUTH           "C:\\opencv\\data\\haarcascades\\haarcascade_mcs_mouth.xml"		//←かなり認識率が悪い
 //#define DIS             //検出し、トリミングした顔を表示するモード
+//#define EYE_NOSE          //目の位置から鼻を検出し、顔を切り出すモード
+#define NOSE_ONLY         //鼻の位置だけから顔領域を切り出すモード
 
 CvFont font;
 FILE *datafile;
@@ -114,40 +116,42 @@ void getData(IplImage* img,uchar vec[FACE_SIZE*FACE_SIZE]){
 	}
 }
 
-void loadLearnData(double data[MEN][FACE_SIZE*FACE_SIZE]){
-	datafile = fopen("learn_vv.txt","r");
+void loadLearnData(){
+	datafile = fopen("learn_vv_1.txt","r");
 	if (datafile == NULL) {
 		printf("cannot open\n");
 		exit(1);
 	}
+
+	//for (int i = 0 ; i < MEN ; i++) fscanf(datafile,"%d",&vv[0][i]);
+	
 	for (int i = 0 ; i < MEN ; i++){
-		for (int  j= 0 ; j < FACE_SIZE*FACE_SIZE ; j++){
-			fscanf(datafile,"%d",&data[i][j]);
+		for (int  j = 0 ; j < FACE_SIZE*FACE_SIZE ; j++){
+			fscanf(datafile,"%lf",&vv[i][j]);
 		}
 	}
+
 	fclose(datafile);
+	//printf("vv[%d][%d] = %f\n",0,0,vv[0][0]);
 }
 
 int specifyOne(){
-	if(vec[0] = 0) return 0;
+	if(vec[0] = 0) return -1;
 	
 	for(int i = 0; i < MEN ; i++){
 		for(int j = 0; j < FACE_SIZE*FACE_SIZE ; j++ ){
 			obj[i] += vv[i][j]*vec[j]; 
 		}
 	}
-
 	double tempmax = obj[0];
-	int maxindex = 0;
-
+	int maxindex = 1;
 	for(int i = 0; i < MEN ; i++) {
 		if(obj[i]>tempmax) {
 			tempmax = obj[i];
-			maxindex = i;
+			maxindex = i+1;
 		}
 	}
-
-	return maxindex+1;
+	return maxindex;
 }
 
 //両目を探します、両目の位置を元に鼻が探知されます
@@ -233,6 +237,19 @@ void getfaceROI(CvRect* faceRect,bool flag){
 		}
 }
 
+void printResult(){
+
+	printf("%03d[frame]\n",num);
+	printf("L-EYE=(%d,%d)\n",leye_center.x,leye_center.y);
+	printf("R-EYE=(%d,%d)\n",reye_center.x,reye_center.y);
+	printf("NOSE=(%d,%d)\n",nose_center.x,nose_center.y);
+	printf("vv[%d][%d] = %f\n",0,0,vv[0][0]);
+	printf("obj=[%04f,%04f,%04f,%04f,%04f]\n",obj[0],obj[1],obj[2],obj[3],obj[4]);
+	//printf("vec[%d]= %d\n",FACE_SIZE*FACE_SIZE-1,vec[FACE_SIZE*FACE_SIZE-1]);
+	//printf("MOUTH=(%d,%d)\n",mouth_center.x,mouth_center.y);
+	printf("====================================\n");
+}
+
 //鼻の中心を探します。
 //トリミングされた顔領域の値を学習データに掛け、どの教師データに一番近いか判別します
 void faceRecog(CvSeq* noseSeq,CvRect* faceRect,IplImage* tarImg,
@@ -253,19 +270,32 @@ void faceRecog(CvSeq* noseSeq,CvRect* faceRect,IplImage* tarImg,
 						CvRect* noseRect = (CvRect*)cvGetSeqElem(noseSeq, j);
 						int cx;
 						int cy;
+#ifdef EYE_NOSE
 						int eye_cx = (int)(reye_center.x + leye_center.x)/2-px;
+#endif EYE_NOSE
 						nose_leftup.x = noseRect->x;
 						nose_leftup.y = noseRect->y;
 						nose_rightdown.x = noseRect->x + noseRect->width;
 						nose_rightdown.y = noseRect->y + noseRect->height;
 						cx = (int)(nose_leftup.x + nose_rightdown.x)/2-px;
 						cy = (int)(nose_leftup.y + nose_rightdown.y)/2-py;
+#ifdef EYE_NOSE
 						if(((int)eye_cx-pw*param1<cx)&(cx<(int)eye_cx+pw*param2)
 						   &((int)ph*param3<cy)&(cy<(int)ph*param4)
 							){
 							nose_center.x = cx+px;
 							nose_center.y = cy+py;
 						}
+#endif EYE_NOSE
+
+#ifdef NOSE_ONLY
+						if(((int)pw*0.40<cx)&(cx<(int)pw*0.60)
+						   &((int)ph*0.40<cy)&(cy<(int)ph*0.60)
+							){
+							nose_center.x = cx+px;
+							nose_center.y = cy+py;
+						}
+#endif NOSE_ONLY
 						if(0 < nose_center.x && nose_center.x < width &&
 						   0 < nose_center.y && nose_center.y < height && flag1
 						  ){
@@ -287,10 +317,10 @@ void faceRecog(CvSeq* noseSeq,CvRect* faceRect,IplImage* tarImg,
 						//cvDestroyWindow(name);
 #endif
 						char str[64];
-						specifyOne();
 
+						//loadLearnData();
 						switch(specifyOne()){
-						case 0 :
+						case -1 :
 							snprintf(str,64,"%s","none");
 							cvPutText(frame,str,face_rightdown,
 								&font,CV_RGB(255,255,0));
@@ -321,6 +351,8 @@ void faceRecog(CvSeq* noseSeq,CvRect* faceRect,IplImage* tarImg,
 								&font,CV_RGB(255,255,0));
 							break;
 						}
+
+						printResult();
 					}
 }
 
@@ -375,31 +407,28 @@ void searchMOUTH(CvSeq* mouthSeq,CvRect* faceRect,IplImage* tarImg,
 }
 */
 
-
-
 int _tmain(int argc, _TCHAR* argv[])
 {
 	cvInitFont (&font, CV_FONT_HERSHEY_DUPLEX, 0.4, 0.4);
 	for (int i = 0 ; i < FACE_SIZE*FACE_SIZE ; i++) vec[i] = 0;
-	loadLearnData(vv);
-
-	
-
+	loadLearnData();
 	//検出器の読み込み
 	CvHaarClassifierCascade* cvHCC = (CvHaarClassifierCascade*)cvLoad(FRONTALFACE);
 	CvHaarClassifierCascade* cvHCC_EYE = (CvHaarClassifierCascade*)cvLoad(EYE);
 	CvHaarClassifierCascade* cvHCC_NOSE = (CvHaarClassifierCascade*)cvLoad(NOSE);
-	CvHaarClassifierCascade* cvHCC_MOUTH = (CvHaarClassifierCascade*)cvLoad(MOUTH);
+	//CvHaarClassifierCascade* cvHCC_MOUTH = (CvHaarClassifierCascade*)cvLoad(MOUTH);
 	//検出に必要なメモリストレージを用意する
 	CvMemStorage* cvMStr = cvCreateMemStorage(0);
 	CvMemStorage* cvMStr_EYE = cvCreateMemStorage(0);
 	CvMemStorage* cvMStr_NOSE = cvCreateMemStorage(0);
-	CvMemStorage* cvMStr_MOUTH = cvCreateMemStorage(0);
+	//CvMemStorage* cvMStr_MOUTH = cvCreateMemStorage(0);
 	//検出情報を受け取るためのシーケンスを用意する
 	CvSeq* face;
+#ifdef EYE_NOSE
 	CvSeq* eye;
+#endif EYE_NOSE
 	CvSeq* nose;
-	CvSeq* mouth;
+	//CvSeq* mouth;
 	//0番号のカメラに対するキャプチャ構造体を生成するる
 	capture = cvCreateCameraCapture (0);
 	//キャプチャのサイズを設定する。ただし、この設定はキャプチャを行うカメラに依存するので注意る
@@ -430,11 +459,14 @@ int _tmain(int argc, _TCHAR* argv[])
 			//検出情報から位置情報を取得
 			CvRect* faceRect = (CvRect*)cvGetSeqElem(face, i);
 			
+#ifdef EYE_NOSE
 			eye = cvHaarDetectObjects(detect_frame,cvHCC_EYE, cvMStr_EYE);
+#endif EYE_NOSE
 			nose = cvHaarDetectObjects(detect_frame,cvHCC_NOSE,cvMStr_NOSE);
-			mouth = cvHaarDetectObjects(detect_frame,cvHCC_MOUTH,cvMStr_MOUTH);
-
+			//mouth = cvHaarDetectObjects(detect_frame,cvHCC_MOUTH,cvMStr_MOUTH);
+#ifdef EYE_NOSE
 			searchEYE(eye,faceRect,frame,0.0,0.425,0.12,0.4,0.575,1.0,0.12,0.4,1);
+#endif EYE_NOSE
 			faceRecog(nose,faceRect,frame,0.06,0.06,0.34,0.7,1,1);
 
 			//searchMOUTH(mouth,faceRect,frame,0.08,0.7,1.0,0.16,1);
@@ -449,44 +481,30 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		//snprintf(str,64,"%03d[frame]",num);
 		//cvPutText(frame,str,cvPoint(10,15),&font,CV_RGB(255,0,0));
-		/*
-		snprintf(str,64,"L-EYE=(%d,%d)",leye_center.x,leye_center.y);
-		cvPutText(frame,str,cvPoint(10,30),&font,CV_RGB(0,255,0));
-		snprintf(str,64,"R-EYE=(%d,%d)",reye_center.x,reye_center.y);
-		cvPutText(frame,str,cvPoint(10,40),&font,CV_RGB(0,255,0));
-		snprintf(str,64,"NOSE=(%d,%d)",nose_center.x,nose_center.y);
-		cvPutText(frame,str,cvPoint(10,50),&font,CV_RGB(0,255,0));
-		snprintf(str,64,"MOUTH=(%d,%d)",mouth_center.x,mouth_center.y);
-		cvPutText(frame,str,cvPoint(10,60),&font,CV_RGB(0,255,0));
-		*/
-		printf("%03d[frame]\n",num);
-		printf("L-EYE=(%d,%d)\n",leye_center.x,leye_center.y);
-		printf("R-EYE=(%d,%d)\n",reye_center.x,reye_center.y);
-		printf("NOSE=(%d,%d)\n",nose_center.x,nose_center.y);
-		//printf("vec[%d]= %d\n",FACE_SIZE*FACE_SIZE-1,vec[FACE_SIZE*FACE_SIZE-1]);
-		//printf("MOUTH=(%d,%d)\n",mouth_center.x,mouth_center.y);
-		printf("====================================\n");
-
+		
 		cvShowImage ("RecogFace", frame);
 		
-
 		num++;
 		c = cvWaitKey (5);
 		if (c == 27) {break;}
 	}
 
 	cvReleaseMemStorage(&cvMStr);
+#ifdef EYE_NOSE
 	cvReleaseMemStorage(&cvMStr_EYE);
+#endif EYE_NOSE
 	cvReleaseMemStorage(&cvMStr_NOSE);
-	cvReleaseMemStorage(&cvMStr_MOUTH);
+	//cvReleaseMemStorage(&cvMStr_MOUTH);
 	cvReleaseCapture (&capture);
 	
 	cvDestroyWindow("RecogFace");
 
 	cvReleaseHaarClassifierCascade(&cvHCC);
+#ifdef EYE_NOSE
 	cvReleaseHaarClassifierCascade(&cvHCC_EYE);
+#endif EYE_NOSE
 	cvReleaseHaarClassifierCascade(&cvHCC_NOSE);
-	cvReleaseHaarClassifierCascade(&cvHCC_MOUTH);
+	//cvReleaseHaarClassifierCascade(&cvHCC_MOUTH);
 
 	return 0;
 }
