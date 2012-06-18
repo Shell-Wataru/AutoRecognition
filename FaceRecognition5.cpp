@@ -62,6 +62,7 @@
 
 #define FACE_SIZE				 32		
 #define MEN						  5
+#define VV                       "learn_vv_10.txt"
 #define MARGIN_X                 1/10	//‰æ‘œ‚©‚çæ‚èœ‚­‰¡•
 #define MARGIN_Y                 1/10	//‰æ‘œ‚©‚çæ‚èœ‚­c•
 #define SCALE0                   1.3
@@ -117,7 +118,7 @@ void getData(IplImage* img,uchar vec[FACE_SIZE*FACE_SIZE]){
 }
 
 void loadLearnData(){
-	datafile = fopen("learn_vv_1.txt","r");
+	datafile = fopen(VV,"r");
 	if (datafile == NULL) {
 		printf("cannot open\n");
 		exit(1);
@@ -153,7 +154,7 @@ int specifyOne(){
 	}
 	return maxindex;
 }
-
+#ifdef EYE_NOSE
 //—¼–Ú‚ğ’T‚µ‚Ü‚·A—¼–Ú‚ÌˆÊ’u‚ğŒ³‚É•@‚ª’T’m‚³‚ê‚Ü‚·
 void searchEYE(CvSeq* eyeSeq,CvRect* faceRect,IplImage* tarImg,
 			   double param1,double param2,double param3,double param4,
@@ -199,6 +200,7 @@ void searchEYE(CvSeq* eyeSeq,CvRect* faceRect,IplImage* tarImg,
 						}
 					}
 }
+#endif EYE_NOSE
 
 //faceRecog‚Ì’†‚Åg‚¢‚Ü‚·
 //•@‚ª’T’m‚³‚ê‚½Œã‚ÉAV‚½‚ÉŠç‚Ì—Ìˆæ(”»’è—p)‚ğæ“¾‚µAvec‚ÉŠi”[‚µ‚Ü‚·
@@ -240,10 +242,12 @@ void getfaceROI(CvRect* faceRect,bool flag){
 void printResult(){
 
 	printf("%03d[frame]\n",num);
+#ifdef EYE_NOSE
 	printf("L-EYE=(%d,%d)\n",leye_center.x,leye_center.y);
 	printf("R-EYE=(%d,%d)\n",reye_center.x,reye_center.y);
+#endif EYE_NOSE
 	printf("NOSE=(%d,%d)\n",nose_center.x,nose_center.y);
-	printf("vv[%d][%d] = %f\n",0,0,vv[0][0]);
+	//printf("vv[%d][%d] = %f\n",0,0,vv[0][0]);
 	printf("obj=[%04f,%04f,%04f,%04f,%04f]\n",obj[0],obj[1],obj[2],obj[3],obj[4]);
 	//printf("vec[%d]= %d\n",FACE_SIZE*FACE_SIZE-1,vec[FACE_SIZE*FACE_SIZE-1]);
 	//printf("MOUTH=(%d,%d)\n",mouth_center.x,mouth_center.y);
