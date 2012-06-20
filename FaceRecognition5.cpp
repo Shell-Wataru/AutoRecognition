@@ -61,7 +61,7 @@
 
 #define FACE_SIZE				 32		
 #define MEN						  5
-#define VV                       "learn_vv_0.5.txt"
+#define VV                       "learn_vv2_1.txt"
 #define MARGIN_X                 1/10	//âÊëúÇ©ÇÁéÊÇËèúÇ≠â°ïù
 #define MARGIN_Y                 1/10	//âÊëúÇ©ÇÁéÊÇËèúÇ≠ècïù
 #define SCALE0                   1.3
@@ -338,32 +338,32 @@ void faceRecog(CvSeq* noseSeq,CvRect* faceRect,IplImage* tarImg,
 						case -1 :
 							snprintf(str,64,"%s","none");
 							cvPutText(frame,str,face_rightdown,
-								&font,CV_RGB(255,255,0));
+								&font,CV_RGB(255,0,255));
 							break;
 						case 1 :
 							snprintf(str,64,"%s","aoi");
 							cvPutText(frame,str,face_rightdown,
-								&font,CV_RGB(255,255,0));
+								&font,CV_RGB(255,0,255));
 							break;
 						case 2 :
 							snprintf(str,64,"%s","kuro");
 							cvPutText(frame,str,face_rightdown,
-								&font,CV_RGB(255,255,0));
+								&font,CV_RGB(255,0,255));
 							break;
 						case 3 :
 							snprintf(str,64,"%s","liang");
 							cvPutText(frame,str,face_rightdown,
-								&font,CV_RGB(255,255,0));
+								&font,CV_RGB(255,0,255));
 							break;
 						case 4 :
 							snprintf(str,64,"%s","shell");
 							cvPutText(frame,str,face_rightdown,
-								&font,CV_RGB(255,255,0));
+								&font,CV_RGB(255,0,255));
 							break;
 						case 5 :
 							snprintf(str,64,"%s","ushi");
 							cvPutText(frame,str,face_rightdown,
-								&font,CV_RGB(255,255,0));
+								&font,CV_RGB(255,0,255));
 							break;
 						}
 						printResult();
