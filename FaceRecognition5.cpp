@@ -2,7 +2,6 @@
 //
 
 #include "stdafx.h"
-#include "stdafx.h"
 #include "stdio.h"
 #include "ctype.h"
 #include "math.h"
@@ -62,7 +61,7 @@
 
 #define FACE_SIZE				 32		
 #define MEN						  5
-#define VV                       "learn_vv_10.txt"
+#define VV                       "learn_vv_0.5.txt"
 #define MARGIN_X                 1/10	//画像から取り除く横幅
 #define MARGIN_Y                 1/10	//画像から取り除く縦幅
 #define SCALE0                   1.3
@@ -72,8 +71,8 @@
 #define NOSE            "C:\\opencv\\data\\haarcascades\\haarcascade_mcs_nose.xml"
 #define MOUTH           "C:\\opencv\\data\\haarcascades\\haarcascade_mcs_mouth.xml"		//←かなり認識率が悪い
 //#define DIS             //検出し、トリミングした顔を表示するモード
-//#define EYE_NOSE          //目の位置から鼻を検出し、顔を切り出すモード
-#define NOSE_ONLY         //鼻の位置だけから顔領域を切り出すモード
+#define EYE_NOSE          //目の位置から鼻を検出し、顔を切り出すモード
+//#define NOSE_ONLY         //鼻の位置だけから顔領域を切り出すモード
 
 CvFont font;
 FILE *datafile;
@@ -138,6 +137,7 @@ void loadLearnData(){
 
 int specifyOne(){
 	if(vec[0] = 0) return -1;
+	for (int i = 0; i < MEN ; i++) obj[i] = 0.0;
 	
 	for(int i = 0; i < MEN ; i++){
 		for(int j = 0; j < FACE_SIZE*FACE_SIZE ; j++ ){
@@ -174,29 +174,35 @@ void searchEYE(CvSeq* eyeSeq,CvRect* faceRect,IplImage* tarImg,
 						eye_leftup.y = eyeRect->y;
 						eye_rightdown.x = eyeRect->x + eyeRect->width;
 						eye_rightdown.y = eyeRect->y + eyeRect->height;
-						cx = (int)(eye_leftup.x + eye_rightdown.x)/2-px;
-						cy = (int)(eye_leftup.y + eye_rightdown.y)/2-py;
+						cx = (int)(eye_leftup.x + eye_rightdown.x)/2;
+						cy = (int)(eye_leftup.y + eye_rightdown.y)/2;
 						if(((int)(pw*param1) < cx)&(cx < (int)(pw*param2))
 							&((int)(ph*param3) < cy)&(cy < (int)(ph*param4))
 							){
-							reye_center.x = cx+px;
-							reye_center.y = cy+py;
+							reye_center.x = cx;
+							reye_center.y = cy;
 						}
 						if(((int)(pw*param5) < cx)&(cx < (int)(pw*param6))
 							&((int)(ph*param7) < cy)&(cy < (int)(ph*param8))
 							){
-							leye_center.x = cx+px;
-							leye_center.y = cy+py;
+							leye_center.x = cx;
+							leye_center.y = cy;
 						}
 						if(flag){
 							cvLine(tarImg,
-								cvPoint((int)(reye_center.x-2)*SCALE0,(int)(reye_center.y-2)*SCALE0),
-								cvPoint((int)(reye_center.x+2)*SCALE0,(int)(reye_center.y+2)*SCALE0),
+								cvPoint((int)(reye_center.x-2+px)*SCALE0,(int)(reye_center.y-2+py)*SCALE0),
+								cvPoint((int)(reye_center.x+2+px)*SCALE0,(int)(reye_center.y+2+py)*SCALE0),
 								CV_RGB( 0 , 255 , 0));
 							cvLine(tarImg,
-								cvPoint((int)(leye_center.x-2)*SCALE0,(int)(leye_center.y+2)*SCALE0),
-								cvPoint((int)(leye_center.x+2)*SCALE0,(int)(leye_center.y-2)*SCALE0),
+								cvPoint((int)(leye_center.x-2+px)*SCALE0,(int)(leye_center.y+2+py)*SCALE0),
+								cvPoint((int)(leye_center.x+2+px)*SCALE0,(int)(leye_center.y-2+py)*SCALE0),
 								CV_RGB( 0 , 255 , 0));
+							cvCircle(tarImg,
+								cvPoint((int)(reye_center.x+px)*SCALE0,(int)(reye_center.y+py)*SCALE0),
+								4,CV_RGB( 0 , 255 , 0),1,8,0);
+							cvCircle(tarImg,
+								cvPoint((int)(leye_center.x+px)*SCALE0,(int)(leye_center.y+py)*SCALE0),
+								4,CV_RGB( 0 , 255 , 0),1,8,0);
 						}
 					}
 }
@@ -204,37 +210,41 @@ void searchEYE(CvSeq* eyeSeq,CvRect* faceRect,IplImage* tarImg,
 
 //faceRecogの中で使います
 //鼻が探知された後に、新たに顔の領域(判定用)を取得し、vecに格納します
-void getfaceROI(CvRect* faceRect,bool flag){
+void getfaceROI(CvRect* faceRect,double param1,double param2,double param3,bool flag){
 
 		int px = faceRect->x;
 		int py = faceRect->y;
 		int pw = faceRect->width;
 		int ph = faceRect->height;
 
-		if (0 < nose_center.x && nose_center.x < width 
-			&& 0 < nose_center.y && nose_center.y < height){
-			face_leftup.x = nose_center.x-1.05*(nose_rightdown.x-nose_leftup.x);
-			if (face_leftup.x < px) face_leftup.x = px+2;
-			face_leftup.y = nose_center.y-1.4*(nose_rightdown.y-nose_leftup.y);
-			if (face_leftup.y < py) face_leftup.y = py+2;
-			face_rightdown.x = nose_center.x+1.05*(nose_rightdown.x-nose_leftup.x);
-			if (face_rightdown.x > px+pw) face_rightdown.x = px+pw-2;
-			face_rightdown.y = nose_center.y+1.1*(nose_rightdown.y-nose_leftup.y);
-			if (face_rightdown.y > px+pw) face_rightdown.y = py+ph-2;
+		//double param1 = 1.05;
+		//double param2 = 1.4;
+		//double param3 = 1.1;
 
-			FACE = cvRect(face_leftup.x*SCALE0,face_leftup.y*SCALE0,
+		if (0 < nose_center.x && nose_center.x < px 
+			&& 0 < nose_center.y && nose_center.y < py){
+			face_leftup.x = nose_center.x-param1*(nose_rightdown.x-nose_leftup.x);
+			if (face_leftup.x < 0) face_leftup.x = 2;
+			face_leftup.y = nose_center.y-param2*(nose_rightdown.y-nose_leftup.y);
+			if (face_leftup.y < 0) face_leftup.y = 2;
+			face_rightdown.x = nose_center.x+param1*(nose_rightdown.x-nose_leftup.x);
+			if (face_rightdown.x > pw) face_rightdown.x = pw-2;
+			face_rightdown.y = nose_center.y+param3*(nose_rightdown.y-nose_leftup.y);
+			if (face_rightdown.y > ph) face_rightdown.y = ph-2;
+
+			FACE = cvRect((face_leftup.x+px)*SCALE0,(face_leftup.y+py)*SCALE0,
 					(face_rightdown.x-face_leftup.x)*SCALE0,
 					(face_rightdown.y-face_leftup.y)*SCALE0);
 			cvSetImageROI(frame_copy,FACE);
-			cvResize(frame_copy,recog,CV_INTER_NN);
+			cvResize(frame_copy,recog,CV_INTER_LINEAR);
 			cvResetImageROI(frame_copy);
 			//cvShowImage("RecogData",recog);
 			getData(recog,vec);
 		}
 		if(flag){
 			cvRectangle(frame,
-				cvPoint((int)face_leftup.x*SCALE0,(int)face_leftup.y*SCALE0),
-				cvPoint((int)face_rightdown.x*SCALE0,(int)face_rightdown.y*SCALE0),
+				cvPoint((int)(face_leftup.x+px)*SCALE0,(int)(face_leftup.y+py)*SCALE0),
+				cvPoint((int)(face_rightdown.x+px)*SCALE0,(int)(face_rightdown.y+py)*SCALE0),
 				CV_RGB(255, 0 ,255), 2, CV_AA);
 		}
 }
@@ -247,9 +257,7 @@ void printResult(){
 	printf("R-EYE=(%d,%d)\n",reye_center.x,reye_center.y);
 #endif EYE_NOSE
 	printf("NOSE=(%d,%d)\n",nose_center.x,nose_center.y);
-	//printf("vv[%d][%d] = %f\n",0,0,vv[0][0]);
 	printf("obj=[%04f,%04f,%04f,%04f,%04f]\n",obj[0],obj[1],obj[2],obj[3],obj[4]);
-	//printf("vec[%d]= %d\n",FACE_SIZE*FACE_SIZE-1,vec[FACE_SIZE*FACE_SIZE-1]);
 	//printf("MOUTH=(%d,%d)\n",mouth_center.x,mouth_center.y);
 	printf("====================================\n");
 }
@@ -275,20 +283,20 @@ void faceRecog(CvSeq* noseSeq,CvRect* faceRect,IplImage* tarImg,
 						int cx;
 						int cy;
 #ifdef EYE_NOSE
-						int eye_cx = (int)(reye_center.x + leye_center.x)/2-px;
+						int eye_cx = (int)(reye_center.x + leye_center.x)/2;
 #endif EYE_NOSE
 						nose_leftup.x = noseRect->x;
 						nose_leftup.y = noseRect->y;
 						nose_rightdown.x = noseRect->x + noseRect->width;
 						nose_rightdown.y = noseRect->y + noseRect->height;
-						cx = (int)(nose_leftup.x + nose_rightdown.x)/2-px;
-						cy = (int)(nose_leftup.y + nose_rightdown.y)/2-py;
+						cx = (int)(nose_leftup.x + nose_rightdown.x)/2;
+						cy = (int)(nose_leftup.y + nose_rightdown.y)/2;
 #ifdef EYE_NOSE
 						if(((int)eye_cx-pw*param1<cx)&(cx<(int)eye_cx+pw*param2)
 						   &((int)ph*param3<cy)&(cy<(int)ph*param4)
 							){
-							nose_center.x = cx+px;
-							nose_center.y = cy+py;
+							nose_center.x = cx;
+							nose_center.y = cy;
 						}
 #endif EYE_NOSE
 
@@ -296,24 +304,27 @@ void faceRecog(CvSeq* noseSeq,CvRect* faceRect,IplImage* tarImg,
 						if(((int)pw*0.40<cx)&(cx<(int)pw*0.60)
 						   &((int)ph*0.40<cy)&(cy<(int)ph*0.60)
 							){
-							nose_center.x = cx+px;
-							nose_center.y = cy+py;
+							nose_center.x = cx;
+							nose_center.y = cy;
 						}
 #endif NOSE_ONLY
 						if(0 < nose_center.x && nose_center.x < width &&
 						   0 < nose_center.y && nose_center.y < height && flag1
 						  ){
 							cvLine(tarImg,
-								cvPoint((int)(nose_center.x-2)*SCALE0,(int)(nose_center.y-2)*SCALE0),
-								cvPoint((int)(nose_center.x+2)*SCALE0,(int)(nose_center.y+2)*SCALE0),
+								cvPoint((int)(nose_center.x-2+px)*SCALE0,(int)(nose_center.y-2+py)*SCALE0),
+								cvPoint((int)(nose_center.x+2+px)*SCALE0,(int)(nose_center.y+2+py)*SCALE0),
 								CV_RGB( 255 , 0 , 0));
 							cvLine(tarImg,
-								cvPoint((int)(nose_center.x-2)*SCALE0,(int)(nose_center.y+2)*SCALE0),
-								cvPoint((int)(nose_center.x+2)*SCALE0,(int)(nose_center.y-2)*SCALE0),
+								cvPoint((int)(nose_center.x-2+px)*SCALE0,(int)(nose_center.y+2+py)*SCALE0),
+								cvPoint((int)(nose_center.x+2+px)*SCALE0,(int)(nose_center.y-2+py)*SCALE0),
 								CV_RGB( 255 , 0 , 0));
+							cvCircle(tarImg,
+								cvPoint((int)(nose_center.x+px)*SCALE0,(int)(nose_center.y+py)*SCALE0),
+								4,CV_RGB( 255 , 0 , 0),1,8,0);
 						}
 
-						getfaceROI(faceRect,flag2);
+						getfaceROI(faceRect,1.05,1.4,1.1,flag2);
 #ifdef DIS
 						sprintf(name,"%s%01d",window,j);
 						cvNamedWindow(name, CV_WINDOW_AUTOSIZE);
@@ -355,7 +366,6 @@ void faceRecog(CvSeq* noseSeq,CvRect* faceRect,IplImage* tarImg,
 								&font,CV_RGB(255,255,0));
 							break;
 						}
-
 						printResult();
 					}
 }
@@ -462,19 +472,21 @@ int _tmain(int argc, _TCHAR* argv[])
 		for (int i = 0; i < face->total; i++) {
 			//検出情報から位置情報を取得
 			CvRect* faceRect = (CvRect*)cvGetSeqElem(face, i);
-			
+			IplImage* gray_face = cvCreateImage(cvSize(faceRect->width, faceRect->height), IPL_DEPTH_8U, 1);
+			cvSetImageROI(detect_frame,*faceRect);
+			cvResize(detect_frame,gray_face,CV_INTER_LINEAR);
+			cvResetImageROI(detect_frame);
+
 #ifdef EYE_NOSE
-			eye = cvHaarDetectObjects(detect_frame,cvHCC_EYE, cvMStr_EYE);
+			eye = cvHaarDetectObjects(gray_face,cvHCC_EYE, cvMStr_EYE);
 #endif EYE_NOSE
-			nose = cvHaarDetectObjects(detect_frame,cvHCC_NOSE,cvMStr_NOSE);
-			//mouth = cvHaarDetectObjects(detect_frame,cvHCC_MOUTH,cvMStr_MOUTH);
+			nose = cvHaarDetectObjects(gray_face,cvHCC_NOSE,cvMStr_NOSE);
+			//mouth = cvHaarDetectObjects(gray_face,cvHCC_MOUTH,cvMStr_MOUTH);
 #ifdef EYE_NOSE
 			searchEYE(eye,faceRect,frame,0.0,0.425,0.12,0.4,0.575,1.0,0.12,0.4,1);
 #endif EYE_NOSE
 			faceRecog(nose,faceRect,frame,0.06,0.06,0.34,0.7,1,1);
-
 			//searchMOUTH(mouth,faceRect,frame,0.08,0.7,1.0,0.16,1);
-			
 			
 			//取得した顔の位置情報に基づき、矩形描画を行う
 			cvRectangle(frame,
@@ -485,9 +497,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		//snprintf(str,64,"%03d[frame]",num);
 		//cvPutText(frame,str,cvPoint(10,15),&font,CV_RGB(255,0,0));
-		
 		cvShowImage ("RecogFace", frame);
-		
 		num++;
 		c = cvWaitKey (5);
 		if (c == 27) {break;}
