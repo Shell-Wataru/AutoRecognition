@@ -1,25 +1,25 @@
-ƒtƒ@ƒCƒ‹‚Ìà–¾
+ï»¿ãƒ•ã‚¡ã‚¤ãƒ«ã®èª¬æ˜Ž
 
-EAutoBinƒtƒHƒ‹ƒ_cƒpƒ\ƒRƒ“‘¤‚ÅŽÀs‚µ‚½exeƒtƒ@ƒCƒ‹‚ª‚ ‚è‚Ü‚·B
-   > SerialControl.exe ‚Í•W€“ü—Í‚©‚çƒRƒ}ƒ“ƒh‚ðŽó‚¯Žæ‚Á‚ÄƒVƒŠƒAƒ‹’ÊM‚ð—p‚¢‚Ä
-		Arduino‚É‘—‚éƒvƒƒOƒ‰ƒ€
-   >VoiceReconginition.exe‚ÍJulius‚ðƒ‚ƒWƒ…[ƒ‹ƒ‚[ƒh‚Å‹N“®(http://julius.sourceforge.jp/juliusbook/ja/desc_module.html)‚µ‚½‚à‚Ì‚Æ’ÊM‚µ‚ÄA”FŽ¯Œ‹‰Ê‚ð‚à‚Æ‚ÉArduino‚É–½—ß‚ð“n‚·ƒvƒƒOƒ‰ƒ€‚Å‚·B
-  >FaceRecongnition.exeŠç”FŽ¯ƒvƒƒOƒ‰ƒ€‚Å‚·Blearn_vv6_0.5.txt‚Í’´•½–Ê‚Ìƒf[ƒ^‚Å‚·B
-
-
-EArduinoƒtƒHƒ‹ƒ_cArduino‚Ìƒ}ƒCƒRƒ“ƒvƒƒOƒ‰ƒ€‚ÌƒR[ƒh‚ª“ü‚Á‚Ä‚¢‚Ü‚·B
-
-EJuliusƒtƒHƒ‹ƒ_cJulius‚ÌÝ’èƒtƒ@ƒCƒ‹‚Å‚·B
-
-EsrcƒtƒHƒ‹ƒ_cƒ\[ƒXƒR[ƒh‚ª“ü‚Á‚Ä‚¢‚Ü‚·B
-  >FaceRecognMain.cpp‚ªFaceRecongnition.exe‚ÌmainŠÖ”‚ª‚ ‚é‚à‚Ì‚ÅA
-  >VoiceRecognMain.cpp‚ªVoiceReconginition.exe‚ÌmainŠÖ”‚ª‚ ‚é‚à‚Ì‚ÅA
-  >SerialControlMain.cpp‚ªSerialControl.exe‚ÌmainŠÖ”‚ª‘‚©‚ê‚Ä‚¢‚éƒtƒ@ƒCƒ‹‚Å‚·B
-@ >tinyxml.hAtinyxml.cpp‚Íhttp://sourceforge.net/projects/tinyxml/‚©‚çŽè‚É“ü‚éƒtƒŠ[‚Ìxmlƒp[ƒT[‚Å‚·B
+ãƒ»AutoBinãƒ•ã‚©ãƒ«ãƒ€â€¦ãƒ‘ã‚½ã‚³ãƒ³å´ã§å®Ÿè¡Œã—ãŸexeãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚Šã¾ã™ã€‚
+   > SerialControl.exe ã¯æ¨™æº–å…¥åŠ›ã‹ã‚‰ã‚³ãƒžãƒ³ãƒ‰ã‚’å—ã‘å–ã£ã¦ã‚·ãƒªã‚¢ãƒ«é€šä¿¡ã‚’ç”¨ã„ã¦
+		Arduinoã«é€ã‚‹ãƒ—ãƒ­ã‚°ãƒ©ãƒ 
+   >VoiceReconginition.exeã¯Juliusã‚’ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ãƒ¢ãƒ¼ãƒ‰ã§èµ·å‹•(http://julius.sourceforge.jp/juliusbook/ja/desc_module.html)ã—ãŸã‚‚ã®ã¨é€šä¿¡ã—ã¦ã€èªè­˜çµæžœã‚’ã‚‚ã¨ã«Arduinoã«å‘½ä»¤ã‚’æ¸¡ã™ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã§ã™ã€‚
+  >FaceRecongnition.exeé¡”èªè­˜ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã§ã™ã€‚learn_vv6_0.5.txtã¯è¶…å¹³é¢ã®ãƒ‡ãƒ¼ã‚¿ã§ã™ã€‚
 
 
+ãƒ»Arduinoãƒ•ã‚©ãƒ«ãƒ€â€¦Arduinoã®ãƒžã‚¤ã‚³ãƒ³ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®ã‚³ãƒ¼ãƒ‰ãŒå…¥ã£ã¦ã„ã¾ã™ã€‚
 
-ERecogSlide.pptx‚Í”­•\‚ÌŽžŽg—p‚µ‚½ƒXƒ‰ƒCƒh‚Å‚·B
+ãƒ»Juliusãƒ•ã‚©ãƒ«ãƒ€â€¦Juliusã®è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã§ã™ã€‚
+
+ãƒ»srcãƒ•ã‚©ãƒ«ãƒ€â€¦ã‚½ãƒ¼ã‚¹ã‚³ãƒ¼ãƒ‰ãŒå…¥ã£ã¦ã„ã¾ã™ã€‚
+  >FaceRecognMain.cppãŒFaceRecongnition.exeã®mainé–¢æ•°ãŒã‚ã‚‹ã‚‚ã®ã§ã€
+  >VoiceRecognMain.cppãŒVoiceReconginition.exeã®mainé–¢æ•°ãŒã‚ã‚‹ã‚‚ã®ã§ã€
+  >SerialControlMain.cppãŒSerialControl.exeã®mainé–¢æ•°ãŒæ›¸ã‹ã‚Œã¦ã„ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã§ã™ã€‚
+ã€€ >tinyxml.hã€tinyxml.cppã¯http://sourceforge.net/projects/tinyxml/ã‹ã‚‰æ‰‹ã«å…¥ã‚‹ãƒ•ãƒªãƒ¼ã®xmlãƒ‘ãƒ¼ã‚µãƒ¼ã§ã™ã€‚
+
+
+
+ãƒ»RecogSlide.pptxã¯ç™ºè¡¨ã®æ™‚ä½¿ç”¨ã—ãŸã‚¹ãƒ©ã‚¤ãƒ‰ã§ã™ã€‚
 
 
 
